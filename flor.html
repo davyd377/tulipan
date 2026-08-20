@@ -1,0 +1,322 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Lluvia de pétalos</title>
+    <style>
+        /* Reset básico */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            height: 100vh; 
+            width: 100vw;
+            background-color: #fcebeb; /* Ajusté el tono a uno más cálido para tu nueva imagen */
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            font-family: 'Georgia', serif;
+            padding: 15px;
+            overflow: hidden; 
+            position: relative;
+        }
+
+        /* --- Título --- */
+        .titulo-superior {
+            position: absolute;
+            top: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            color: #d6a5ac;
+            font-size: 1.8rem;
+            font-weight: normal;
+            letter-spacing: 1px;
+            z-index: 20;
+            text-align: center;
+            width: 90%;
+            white-space: nowrap;
+        }
+
+        /* --- Imagen --- */
+        .contenedor-imagen {
+            position: relative; /* Para posicionar el sello dentro de la imagen */
+            max-width: 80vw;   
+            max-height: 60vh;  
+            z-index: 10; 
+        }
+
+        .imagen-central {
+            width: 100%;
+            height: 100%;
+            object-fit: contain;
+            cursor: pointer;
+            border-radius: 15px; /* El borde redondeado que se ve en tu foto */
+            transition: transform 0.1s ease;
+            display: block;
+        }
+
+        .imagen-central:active {
+            transform: scale(0.97);
+        }
+
+        /* --- El Sello / Botón Secreto --- */
+        .sello-secreto {
+            position: absolute;
+            bottom: 15px;
+            right: 15px;
+            width: 45px;
+            height: 45px;
+            background: rgba(255, 255, 255, 0.8);
+            backdrop-filter: blur(3px);
+            border-radius: 50%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 1.5rem;
+            cursor: pointer;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+            transition: transform 0.2s ease;
+            z-index: 15;
+            border: 1px solid rgba(214, 165, 172, 0.5);
+            color: #d6a5ac;
+        }
+
+        .sello-secreto:active {
+            transform: scale(0.85);
+        }
+        
+        .sello-secreto:hover {
+            transform: scale(1.1);
+        }
+
+        /* --- Texto Inferior --- */
+        .texto-inferior {
+            margin-top: 25px;
+            color: #d6a5ac;
+            font-size: 1.2rem;
+            text-align: center;
+            font-weight: 300;
+            letter-spacing: 1px;
+            z-index: 10;
+            padding: 0 10px;
+            line-height: 1.5;
+        }
+
+        /* --- Estilos del Pétalo --- */
+        .petalo-caido {
+            position: fixed; 
+            width: 35px;
+            height: 40px;
+            background: radial-gradient(circle at 30% 30%, #f8cdd6, #e28d9e); 
+            border-radius: 50% 0 50% 0; 
+            opacity: 0; 
+            pointer-events: none; 
+            z-index: 5;
+            box-shadow: 0 4px 8px rgba(226, 141, 158, 0.3);
+            animation: caerPetalo linear forwards;
+        }
+
+        @keyframes caerPetalo {
+            0% { transform: translate(0, 0) rotate(0deg) scale(0.6); opacity: 0; }
+            15% { opacity: 1; }
+            100% { transform: translate(var(--vuelo-x), var(--vuelo-y)) rotate(720deg) scale(1.2); opacity: 0; }
+        }
+
+        /* --- LA CARTITA FLOTANTE (Modal) --- */
+        .modal-overlay {
+            position: fixed;
+            top: 0; left: 0;
+            width: 100%; height: 100%;
+            background: rgba(0,0,0,0.3);
+            backdrop-filter: blur(5px);
+            display: none; /* Oculto por defecto */
+            justify-content: center;
+            align-items: center;
+            z-index: 100;
+            padding: 20px;
+        }
+
+        .modal-contenido {
+            background: #fffcfc;
+            max-width: 500px;
+            width: 100%;
+            padding: 40px 30px;
+            border-radius: 25px;
+            text-align: center;
+            box-shadow: 0 20px 60px rgba(214, 165, 172, 0.4);
+            position: relative;
+            animation: aparecerModal 0.5s ease forwards;
+            border: 2px solid #fcebeb;
+        }
+
+        @keyframes aparecerModal {
+            0% { transform: scale(0.8) translateY(30px); opacity: 0; }
+            100% { transform: scale(1) translateY(0); opacity: 1; }
+        }
+
+        .modal-contenido p {
+            color: #c0878f;
+            font-size: 1.3rem;
+            line-height: 1.6;
+            font-style: italic;
+            font-family: 'Georgia', serif;
+        }
+
+        .modal-cerrar {
+            position: absolute;
+            top: 10px;
+            right: 20px;
+            font-size: 2rem;
+            color: #d6a5ac;
+            cursor: pointer;
+            transition: 0.3s;
+            background: none;
+            border: none;
+        }
+        .modal-cerrar:hover { transform: rotate(90deg); }
+
+        /* --- Media Queries --- */
+        @media (min-width: 601px) and (max-width: 1024px) {
+            .titulo-superior { font-size: 2rem; top: 30px; }
+            .contenedor-imagen { max-width: 70vw; max-height: 55vh; }
+            .texto-inferior { font-size: 1.4rem; }
+        }
+
+        @media (min-width: 1025px) {
+            .titulo-superior { font-size: 2.5rem; top: 50px; }
+            .contenedor-imagen { max-width: 45vw; max-height: 65vh; }
+            .texto-inferior { font-size: 1.6rem; margin-top: 40px; }
+        }
+
+        @media (max-width: 400px) {
+            .titulo-superior { font-size: 1.1rem; top: 10px; white-space: normal; }
+            .texto-inferior { font-size: 0.9rem; }
+            .contenedor-imagen { max-width: 90vw; max-height: 50vh; }
+            .sello-secreto { width: 35px; height: 35px; font-size: 1.2rem; bottom: 10px; right: 10px; }
+            .modal-contenido { padding: 30px 20px; }
+            .modal-contenido p { font-size: 1rem; }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="titulo-superior">🌷 Un detalle que quedó pendiente</div>
+
+    <!-- CONTENEDOR DE LA IMAGEN -->
+    <div class="contenedor-imagen">
+        <!-- Usé "tulipanez.jpeg" porque es el nombre que tenías antes. Cámbialo si la imagen nueva se llama diferente -->
+        <img id="miImagen" src="tulipanez.jpeg" alt="Ramo de tulipanes y osito" class="imagen-central">
+        
+        <!-- EL SELLO (Botón de tulipán) -->
+        <div class="sello-secreto" id="btnSello">🌸</div>
+    </div>
+
+    <div class="texto-inferior">
+        🌷 Para ti, amiga. Un pequeño presente que no pude darte en tu cumpleaños. 🌷
+    </div>
+
+    <!-- AUDIO OCULTO -->
+    <audio id="miAudio" preload="auto">
+        <source src="flor.MP3" type="audio/mpeg">
+    </audio>
+
+    <!-- CARTITA FLOTANTE (Modal) -->
+    <div class="modal-overlay" id="modalMensaje">
+        <div class="modal-contenido">
+            <button class="modal-cerrar" id="cerrarModal">✕</button>
+            <p>🌸 "En la discreción de un tulipán rosa se esconde el afecto más honesto: una belleza calma que no necesita hacer ruido para hacerse notar." 🌸</p>
+        </div>
+    </div>
+
+
+    <script>
+        const imagen = document.getElementById('miImagen');
+        const audio = document.getElementById('miAudio');
+        
+        // Elementos del sello y el modal
+        const btnSello = document.getElementById('btnSello');
+        const modalMensaje = document.getElementById('modalMensaje');
+        const cerrarModal = document.getElementById('cerrarModal');
+
+        // --- 1. Función de la lluvia de pétalos y música ---
+        function crearExplosionDePetalosYMusica(evento) {
+            audio.currentTime = 0;
+            audio.play().catch(error => console.log("Error al reproducir audio"));
+
+            const rect = imagen.getBoundingClientRect();
+            const bordes = [
+                { x: rect.left + (rect.width / 2), y: rect.top },
+                { x: rect.left + (rect.width / 2), y: rect.bottom },
+                { x: rect.left, y: rect.top + (rect.height / 2) },
+                { x: rect.right, y: rect.top + (rect.height / 2) }
+            ];
+
+            let petalosPorLado = window.innerWidth < 600 ? 8 : (window.innerWidth > 1024 ? 15 : 10);
+
+            bordes.forEach(borde => {
+                for (let i = 0; i < petalosPorLado; i++) {
+                    const petalo = document.createElement('div');
+                    petalo.classList.add('petalo-caido');
+
+                    const size = Math.random() * 15 + (window.innerWidth < 600 ? 15 : 20); 
+                    petalo.style.width = size + 'px';
+                    petalo.style.height = (size * 1.2) + 'px';
+
+                    const offsetX = (Math.random() - 0.5) * 40; 
+                    const offsetY = (Math.random() - 0.5) * 40; 
+                    petalo.style.left = (borde.x + offsetX) + 'px';
+                    petalo.style.top = (borde.y + offsetY) + 'px';
+
+                    const distanciaVuelo = window.innerWidth < 600 ? 300 : 600;
+                    const direccionX = (Math.random() - 0.5) * distanciaVuelo; 
+                    const direccionY = (Math.random() - 0.5) * distanciaVuelo; 
+                    
+                    petalo.style.setProperty('--vuelo-x', direccionX + 'px');
+                    petalo.style.setProperty('--vuelo-y', direccionY + 'px');
+
+                    const duracion = Math.random() * 1.2 + (window.innerWidth < 600 ? 1.0 : 1.5); 
+                    petalo.style.animationDuration = duracion + 's';
+                    petalo.style.transform = `rotate(${Math.random() * 360}deg)`;
+
+                    document.body.appendChild(petalo);
+                    setTimeout(() => petalo.remove(), duracion * 1000);
+                }
+            });
+        }
+
+        // --- 2. Funciones del Sello (Mostrar/Ocultar carta) ---
+        function abrirMensaje() {
+            modalMensaje.style.display = 'flex';
+        }
+
+        function cerrarMensaje() {
+            modalMensaje.style.display = 'none';
+        }
+
+        // --- 3. Event Listeners (Los "click") ---
+
+        // Clic en la imagen (Pétalos + Música)
+        imagen.addEventListener('click', crearExplosionDePetalosYMusica);
+
+        // Clic en el Sello (Abrir carta)
+        btnSello.addEventListener('click', abrirMensaje);
+
+        // Clic en la X de la carta (Cerrar carta)
+        cerrarModal.addEventListener('click', cerrarMensaje);
+
+        // Clic en cualquier lugar fuera de la carta (Cerrar carta)
+        modalMensaje.addEventListener('click', function(e) {
+            if (e.target === modalMensaje) {
+                cerrarMensaje();
+            }
+        });
+
+    </script>
+
+</body>
+</html>
